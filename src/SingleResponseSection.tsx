@@ -5,7 +5,7 @@ import _ from "lodash";
 const SingleResponseSection: React.FC = () => {
   const [answer, setAnswer] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
-  const prompt = "Count from 0 to 10, use English word instead of number";
+  const prompt = ApiKeyHelper.getKey();
 
   const handleClickSend = async () => {
     setAnswer("");
@@ -13,31 +13,25 @@ const SingleResponseSection: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
+        `http://localhost:3037/v1/curator/ideas?query=${prompt}`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${ApiKeyHelper.getKey()}`
-          },
-          body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            max_tokens: 2048,
-            temperature: 0.7,
-            messages: [{ role: "user", content: prompt }]
-          })
+          method: "GET",
         }
       );
+
+      console.log("response");
+      console.log("response", response);
+      const data = await response.json();
+      console.log("data", data);
+      console.log("data.data", data.data);
+      console.log("data.success", data.success);
 
       if (!response.ok) {
         console.error(`Error: ${response.statusText}`);
         return;
       }
-
-      const data = await response.json();
       console.log(data);
-
-      setAnswer(_.toString(_.get(data, "choices.0.message.content")));
+      setAnswer(_.toString(data.data));
     } catch (e) {
       console.error(e);
     } finally {
